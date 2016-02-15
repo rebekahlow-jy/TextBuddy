@@ -64,7 +64,7 @@ public class TextBuddy {
 	}
 
 	public static void executeCommand(String userCommand) {
-		if (isInvalidCommand(userCommand)){
+		if (isNullCommand(userCommand)){
 			System.out.println(String.format(MESSAGE_INVALID_FORMAT, userCommand));
 		} else {
 			String commandTypeString = getFirstWord(userCommand);
@@ -73,7 +73,7 @@ public class TextBuddy {
 		}
 	}
 
-	private static boolean isInvalidCommand(String userCommand) {
+	protected static boolean isNullCommand(String userCommand) {
 		if (userCommand.trim().equals("")){
 			return true;
 		} else {

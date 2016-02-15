@@ -1,16 +1,14 @@
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-
 public class TextBuddyTest {
-	
+
 	@Test
-	public void testAddCommand() {
-		//check if the “clear” command returns the right status message
-		testCommand("all content deleted from mytextfile.txt", "clear");
-	}
-	
-	private void testCommand(String expected, String userCommand){
-		assertEquals(expected, TextBuddy.executeCommand(userCommand));
+	public void testIsInvalidCommand() {
+		assertFalse(TextBuddy.isNullCommand("clear"));
+		assertFalse(TextBuddy.isNullCommand("sdfdsa"));
+		assertFalse(TextBuddy.isNullCommand("add kdfkdpos"));
+		assertTrue(TextBuddy.isNullCommand(""));
 	}
 }
