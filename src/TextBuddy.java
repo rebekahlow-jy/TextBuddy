@@ -25,6 +25,7 @@ public class TextBuddy {
 	private static final String MESSAGE_EMPTY = "%1s is empty";
 	private static final String MESSAGE_ADDED = "added to %1s: %2$s";
 	private static final String MESSAGE_INVALID_FORMAT = "invalid command format :%1$s";
+	private static final String MESSAGE_CLEAR = "all content deleted from %1$s";
 	private static final String MESSAGE_WELCOME = "Welcome to TextBuddy. %1s is ready for use";
 	private static final String MESSAGE_NULL_COMMAND_TYPE = "command type string cannot be null!";
 
@@ -131,7 +132,7 @@ public class TextBuddy {
 		}
 	}
 
-	private static void addText(String userCommand) {
+	static void addText(String userCommand) {
 		String commandText = "";
 		commandText = removeFirstWord(userCommand);
 		commandList.add(commandText);
@@ -158,7 +159,8 @@ public class TextBuddy {
 
 	private static void clearContent(String userCommand) {
 		commandList.clear();
-		System.out.println("all content deleted from notepad.txt");
+		System.out.println(String.format(MESSAGE_CLEAR, fileName));
+
 	}
 
 	private static void saveFile() {
