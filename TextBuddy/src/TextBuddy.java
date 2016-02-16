@@ -14,7 +14,7 @@ import java.io.OutputStreamWriter;
  * 
  * Assumptions:
  * 1. Command(s) will be the first single word.
- * 2. Adding of empty line will not be permitted.
+ * 2. Adding of empty line and/or white spaces will not be permitted.
  * 3. Deleting non-valid line number will not be permitted.
  * 
  * Commands:
@@ -39,6 +39,7 @@ public class TextBuddy {
 	private static final String MESSAGE_EMPTY = "%1s is empty";
 	private static final String MESSAGE_ADDED = "added to %1s: %2$s";
 	private static final String MESSAGE_INVALID_FORMAT = "invalid command format :%1$s";
+	private static final String MESSAGE_DELETE_ERROR = "cannot delete number that does not exist";
 	private static final String MESSAGE_CLEAR = "all content deleted from %1$s";
 	private static final String MESSAGE_WELCOME = "Welcome to TextBuddy. %1s is ready for use";
 	private static final String MESSAGE_NULL_COMMAND_TYPE = "command type string cannot be null!";
@@ -172,9 +173,13 @@ public class TextBuddy {
 	protected static String deleteText(String userInput, ArrayList<String> commandList) {
 		int lineNumberToDelete = Integer.parseInt(removeFirstWord(userInput));
 		int arrayIndexToDelete = (lineNumberToDelete - ARRAY_OFFSET);
-		String removedCommand = commandList.remove(arrayIndexToDelete);
-		String deleteMessage = formatDeleteMessage(removedCommand);
-		return deleteMessage;
+		try {
+			String removedCommand = commandList.remove(arrayIndexToDelete);
+			String deleteMessage = formatDeleteMessage(removedCommand);
+			return deleteMessage;
+		} catch (Exception deleteNumberOutOfBounds) {
+			return MESSAGE_DELETE_ERROR;
+		}
 	}
 	
 	/** Clear content to be written into text file. 

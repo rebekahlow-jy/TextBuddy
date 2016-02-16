@@ -11,6 +11,8 @@ import org.junit.Test;
 public class TextBuddyTest {
 
 	private static final String MESSAGE_ADDED = "added to %1s: %2$s";
+	private static final String MESSAGE_DELETE = "deleted from %1$s : %2$s";
+	private static final String MESSAGE_DELETE_ERROR = "cannot delete number that does not exist";
 	
 	private static ArrayList<String> testList = new ArrayList<String>();
 	
@@ -45,8 +47,32 @@ public class TextBuddyTest {
 	@Test
 	public void testAddText() {
 		testList.clear();
-		assertEquals(String.format(MESSAGE_ADDED, TextBuddy.getGivenFileName(), "Hello World"), TextBuddy.addText("add Hello World", testList));
-		assertEquals(String.format(MESSAGE_ADDED, TextBuddy.getGivenFileName(), "CS2103 is Fun~"), TextBuddy.addText("add CS2103 is Fun~", testList));
+		assertEquals(String.format(MESSAGE_ADDED, TextBuddy.getGivenFileName(), "Hello World"), 
+					 TextBuddy.addText("add Hello World", testList));
+		assertEquals(String.format(MESSAGE_ADDED, TextBuddy.getGivenFileName(), "CS2103 is Fun~"), 
+					 TextBuddy.addText("add CS2103 is Fun~", testList));	
+	}
+	
+	@Test
+	public void testDeleteText() {
+		testList.clear();
+		testList.add("BANANA");
+		testList.add("COCONUT");
+		testList.add("APPLE");
+		testList.add("NAANANA");
+		testList.add("ANANAS");
+		
+		assertEquals(String.format(MESSAGE_DELETE, "notepad.txt", "APPLE"), 
+					 TextBuddy.deleteText("delete 3", testList));
+		assertEquals(String.format(MESSAGE_DELETE, "notepad.txt", "NAANANA"), 
+					 TextBuddy.deleteText("delete 3", testList));
+		
+		testList.clear();
+		testList.add("HEY");
+		testList.add("THERE");
+		
+		assertEquals((MESSAGE_DELETE_ERROR), TextBuddy.deleteText("delete 3", testList));
+		assertEquals((MESSAGE_DELETE_ERROR), TextBuddy.deleteText("delete -2", testList));
 	}
 
 	@Test
