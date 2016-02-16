@@ -12,11 +12,19 @@ import java.io.OutputStreamWriter;
  * will save the final user input into a text file which will be created upon
  * exiting the program.
  * 
- * Assumption(s):
+ * Assumptions:
  * 1. Command(s) will be the first single word.
  * 2. Adding of empty line will not be permitted.
  * 3. Deleting non-valid line number will not be permitted.
- *  
+ * 
+ * Commands:
+ * 1. add [CONTENT TO BE ADDED]
+ * 2. display
+ * 3. delete [LINE NUMBER TO BE DELETED]
+ * 4. clear
+ * 5. sort
+ * 6. exit
+ * 
  * @author Rebekah Low Jin Yan
  */
 
@@ -38,6 +46,7 @@ public class TextBuddy {
 	private static final String MESSAGE_DELETE = "deleted from %1$s : %2$s";
 	private static final String MESSAGE_DISPLAY = "%1$s. %2$s";
 	private static final String MESSAGE_SEARCH_FAILED = "search text not found";
+	private static final String MESSAGE_SORT = "lines successfully sorted alphabetically";
 	
 	/**Regular expression used for splitting command*/
 	private final static String REGEX_COMMAND_DELIMITER = "\\s+";
@@ -132,7 +141,7 @@ public class TextBuddy {
 		print(formatAddedMessage(textToAdd));
 	}
 	
-	/** Display content to be written into text file */
+	/** Display content to be written into text file. */
 	protected static void displayContent() {
 		if (commandList.isEmpty()) {
 			print(formatFileEmptyMessage());
@@ -157,13 +166,13 @@ public class TextBuddy {
 		print(formatDeleteMessage(removedCommand));
 	}
 	
-	/** Clear content to be written into text file */
+	/** Clear content to be written into text file. */
 	protected static void clearContent(String userCommand) {
 		commandList.clear();
 		print(formatClearedTextMessage());
 	}
 	
-	/** Search for text to be written into text file */
+	/** Search for a word in the file and return the lines containing that word. */
 	protected static void searchText (String userInput) {
 		ArrayList<String> foundList = new ArrayList<String>();
 		String searchText = removeFirstWord(userInput);
@@ -182,12 +191,13 @@ public class TextBuddy {
 		}
 	}
 	
-	/** Sort lines alphabetically and change the order lines are arranged*/
+	/** Sort lines alphabetically and change the order lines are arranged. */
 	protected static void sortLines () {
 		Collections.sort(commandList, String.CASE_INSENSITIVE_ORDER);
+		print(MESSAGE_SORT);
 	}
 	
-	/** Save content modified by user command into text file */
+	/** Save content modified by user command into text file. */
 	protected static void saveFile() {
 		try {
 			FileOutputStream input = new FileOutputStream(fileName);
