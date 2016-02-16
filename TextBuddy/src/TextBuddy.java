@@ -1,9 +1,9 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 
 /**
  * This class is used to add, display, delete and clear text that the user
@@ -37,6 +37,7 @@ public class TextBuddy {
 	private static final String MESSAGE_COMMAND_PROMPT = "command: ";
 	private static final String MESSAGE_DELETE = "deleted from %1$s : %2$s";
 	private static final String MESSAGE_DISPLAY = "%1$s. %2$s";
+	private static final String MESSAGE_SEARCH_FAILED = "search text not found";
 	
 	/**Regular expression used for splitting command*/
 	private final static String REGEX_COMMAND_DELIMITER = "\\s+";
@@ -49,7 +50,7 @@ public class TextBuddy {
 	
 	/** Enumeration of command types */
 	enum CommandType {
-		ADD_TEXT, DISPLAY_CONTENT, DELETE_TEXT, CLEAR_CONTENT, INVALID, EXIT
+		ADD_TEXT, DISPLAY_CONTENT, DELETE_TEXT, CLEAR_CONTENT, INVALID, SEARCH, SORT, EXIT
 	};
 	
 	/*
@@ -60,7 +61,7 @@ public class TextBuddy {
 	
 	public static void main(String[] args) {
 		readGivenFileName(args);
-		printWelcomeMessage();
+		print(formatWelcomeMessage());
 		beginCommandLoop();
 	}
 	
@@ -79,7 +80,7 @@ public class TextBuddy {
 
 	protected static void executeCommand(String userInput) {
 		if (isInputNull(userInput)){
-			printNullCommandTypeMessage();
+			print(MESSAGE_NULL_COMMAND_TYPE);
 		} else {
 			CommandType commandType = getCommandType(userInput);
 			executeCommandType(userInput, commandType);
@@ -105,12 +106,18 @@ public class TextBuddy {
 			case CLEAR_CONTENT:
 				clearContent(userInput);
 				break;
+			case SEARCH:
+				searchText(userInput);
+				break;
+			case SORT:
+				sortLines();
+				break;
 			case EXIT:
 				saveFile();
 				System.exit(0);
 			case INVALID:
 			default:
-				printInvalidFormatMessage(userInput);
+				print(formatInvalidFormatMessage(userInput));
 		}
 	}
 	
@@ -120,21 +127,20 @@ public class TextBuddy {
 	* @param userInput			User input to be added to text file.
 	*/
 	protected static void addText(String userInput) {
-		String textToAdd = "";
-		textToAdd = removeFirstWord(userInput);
+		String textToAdd = removeFirstWord(userInput);
 		commandList.add(textToAdd);
-		printAddedMessage(textToAdd);
+		print(formatAddedMessage(textToAdd));
 	}
 	
 	/** Display content to be written into text file */
 	protected static void displayContent() {
 		if (commandList.isEmpty()) {
-			printFileEmptyMessage();
+			print(formatFileEmptyMessage());
 		} else {
 			for (int i = 0; i < commandList.size(); i++) {
 				int textIndex = (i + ARRAY_OFFSET);
 				String textLine = commandList.get(i);
-				printTextLineByLine(textIndex, textLine);
+				print(formatTextLine(textIndex, textLine));
 			}
 		}
 	}
@@ -148,15 +154,39 @@ public class TextBuddy {
 		int lineNumberToDelete = Integer.parseInt(removeFirstWord(userInput));
 		int arrayIndexToDelete = (lineNumberToDelete - ARRAY_OFFSET);
 		String removedCommand = commandList.remove(arrayIndexToDelete);
-		printLineDeletedMessage(removedCommand);
+		print(formatDeleteMessage(removedCommand));
 	}
 	
 	/** Clear content to be written into text file */
 	protected static void clearContent(String userCommand) {
 		commandList.clear();
-		printClearedTextMessage();
+		print(formatClearedTextMessage());
 	}
-
+	
+	/** Search for text to be written into text file */
+	protected static void searchText (String userInput) {
+		ArrayList<String> foundList = new ArrayList<String>();
+		String searchText = removeFirstWord(userInput);
+		for (String currentString : commandList){
+			if (currentString.contains(searchText)){
+				int textIndex = (commandList.indexOf(currentString) + ARRAY_OFFSET);
+				String textLine = currentString;
+				foundList.add(formatTextLine(textIndex, textLine));
+			}
+		}
+		if (foundList.isEmpty()){
+			print(MESSAGE_SEARCH_FAILED);
+		} else for (int i = 0; i < foundList.size(); i++){
+			String foundLine = foundList.get(i);
+			print(foundLine);
+		}
+	}
+	
+	/** Sort lines alphabetically and change the order lines are arranged*/
+	protected static void sortLines () {
+		Collections.sort(commandList, String.CASE_INSENSITIVE_ORDER);
+	}
+	
 	/** Save content modified by user command into text file */
 	protected static void saveFile() {
 		try {
@@ -194,6 +224,10 @@ public class TextBuddy {
 				return CommandType.DELETE_TEXT;
 			case "clear":
 				return CommandType.CLEAR_CONTENT;
+			case "search":
+				return CommandType.SEARCH;
+			case "sort":
+				return CommandType.SORT;
 			case "exit":
 				return CommandType.EXIT;
 			default: 
@@ -218,43 +252,41 @@ public class TextBuddy {
 	protected static void readGivenFileName(String[] args) {
 		fileName = (args[0]);
 	}
-	protected static String formatTextLine(int textIndex, String textLine){
-		return String.format(MESSAGE_DISPLAY, textIndex, textLine);
-	}
-	protected static void printWelcomeMessage() {
-		System.out.println(String.format(MESSAGE_WELCOME, fileName));
+	
+	protected static void print(String message){
+		System.out.println(message);
 	}
 	
 	private static void printCommandPromptMessage() {
 		System.out.print(MESSAGE_COMMAND_PROMPT);
 	}
-	
-	private static void printAddedMessage(String textToAdd) {
-		System.out.println(String.format(MESSAGE_ADDED, fileName, textToAdd));
-	}
-	
-	private static void printInvalidFormatMessage(String userInput) {
-		System.out.println(String.format(MESSAGE_INVALID_FORMAT, userInput));
-	}
 
-	private static void printNullCommandTypeMessage() {
-		System.out.println(String.format(MESSAGE_NULL_COMMAND_TYPE));
+	protected static String formatWelcomeMessage() {
+		return String.format(MESSAGE_WELCOME, fileName);
 	}
 	
-	private static void printFileEmptyMessage() {
-		System.out.println(String.format(MESSAGE_EMPTY, fileName));
+	private static String formatAddedMessage(String textToAdd) {
+		return String.format(MESSAGE_ADDED, fileName, textToAdd);
 	}
 	
-	private static void printClearedTextMessage() {
-		System.out.println(String.format(MESSAGE_CLEAR, fileName));
+	private static String formatInvalidFormatMessage(String userInput) {
+		return String.format(MESSAGE_INVALID_FORMAT, userInput);
 	}
 	
-	private static void printLineDeletedMessage(String removedCommand) {
-		System.out.println(String.format(MESSAGE_DELETE, fileName, removedCommand));
+	private static String formatFileEmptyMessage() {
+		return String.format(MESSAGE_EMPTY, fileName);
 	}
 	
-	private static void printTextLineByLine(int textIndex, String textLine) {
-		System.out.println(formatTextLine(textIndex, textLine));
+	private static String formatClearedTextMessage() {
+		return String.format(MESSAGE_CLEAR, fileName);
+	}
+	
+	private static String formatDeleteMessage(String removedCommand) {
+		return String.format(MESSAGE_DELETE, fileName, removedCommand);
+	}
+	
+	protected static String formatTextLine(int textIndex, String textLine){
+		return String.format(MESSAGE_DISPLAY, textIndex, textLine);
 	}
 	
 	protected static String removeFirstWord(String userInput) {
