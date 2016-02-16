@@ -70,7 +70,7 @@ public class TextBuddy {
 	
 	public static void main(String[] args) {
 		readGivenFileName(args);
-		print(formatWelcomeMessage());
+		showToUser(formatWelcomeMessage());
 		beginCommandLoop();
 	}
 	
@@ -88,11 +88,17 @@ public class TextBuddy {
 	}
 
 	protected static void executeCommand(String userInput) {
-		if (isInputNull(userInput)){
-			print(MESSAGE_NULL_COMMAND_TYPE);
+		if (isInputCommandNull(userInput)){
+			showToUser(MESSAGE_NULL_COMMAND_TYPE);
 		} else {
 			CommandType commandType = getCommandType(userInput);
-			executeCommandType(userInput, commandType);
+			Object feedback = executeCommandType(userInput, commandType);
+			if(feedback instanceof String){
+				String feedbackMessage = (String) feedback;
+				if(feedbackMessage != null){
+					showToUser(feedbackMessage);
+				}
+			}
 		}
 	}
 	
@@ -101,79 +107,91 @@ public class TextBuddy {
 		return getCommandTypeFromString(commandTypeString);
 	}
 	
-	protected static void executeCommandType(String userInput, CommandType commandType) {
+	protected static Object executeCommandType(String userInput, CommandType commandType) {
 		switch (commandType) {
 			case ADD_TEXT:
-				addText(userInput);
-				break;
+				return addText(userInput);
 			case DISPLAY_CONTENT:
-				displayContent();
-				break;
+				return displayContent();
 			case DELETE_TEXT:
-				deleteText(userInput);
-				break;
+				return deleteText(userInput);
 			case CLEAR_CONTENT:
-				clearContent(userInput);
-				break;
+				return clearContent();
 			case SEARCH:
-				searchText(userInput);
-				break;
+				return searchText(userInput);
 			case SORT:
-				sortLines();
-				break;
+				return sortLines();
 			case EXIT:
 				saveFile();
 				System.exit(0);
+				return null;
 			case INVALID:
 			default:
-				print(formatInvalidFormatMessage(userInput));
+				return formatInvalidFormatMessage(userInput);
 		}
 	}
 	
 	/**
 	* Add text to be written into text file.
 	*
-	* @param userInput			User input to be added to text file.
+	* @param userInput			String to add to text file.
 	*/
-	protected static void addText(String userInput) {
+	protected static String addText(String userInput) {
 		String textToAdd = removeFirstWord(userInput);
 		commandList.add(textToAdd);
-		print(formatAddedMessage(textToAdd));
+		return formatAddedMessage(textToAdd);
 	}
 	
-	/** Display content to be written into text file. */
-	protected static void displayContent() {
+	/** Display content to be written into text file. 
+	 * 
+	 * @return emptyMessage		Empty file message to be shown to user.
+	 * @return textDisplay		Text lines to be shown to user. 
+	 */
+	protected static String displayContent() {
 		if (commandList.isEmpty()) {
-			print(formatFileEmptyMessage());
+			String emptyMessage = formatFileEmptyMessage();
+			return emptyMessage;
 		} else {
 			for (int i = 0; i < commandList.size(); i++) {
 				int textIndex = (i + ARRAY_OFFSET);
 				String textLine = commandList.get(i);
-				print(formatTextLine(textIndex, textLine));
+				String textDisplay = formatTextLine(textIndex, textLine);
+				showToUser(textDisplay);
 			}
 		}
+		return null;
 	}
-	
+
 	/**
 	* Delete text to be written into text file.
 	*
-	* @param userInput			User input to be added to text file.
+	* @param userInput			String line number to deleted in text file.
+	* @return deleteMessage		Delete message to be shown to user.
 	*/
-	protected static void deleteText(String userInput) {
+	protected static String deleteText(String userInput) {
 		int lineNumberToDelete = Integer.parseInt(removeFirstWord(userInput));
 		int arrayIndexToDelete = (lineNumberToDelete - ARRAY_OFFSET);
 		String removedCommand = commandList.remove(arrayIndexToDelete);
-		print(formatDeleteMessage(removedCommand));
+		String deleteMessage = formatDeleteMessage(removedCommand);
+		return deleteMessage;
 	}
 	
-	/** Clear content to be written into text file. */
-	protected static void clearContent(String userCommand) {
+	/** Clear content to be written into text file. 
+	 * 
+	 * @return clearMessage		Cleared message to be shown to user.
+	 */
+	protected static String clearContent() {
 		commandList.clear();
-		print(formatClearedTextMessage());
+		String clearMessage = formatClearedTextMessage();
+		return clearMessage;
 	}
 	
-	/** Search for a word in the file and return the lines containing that word. */
-	protected static void searchText (String userInput) {
+	/** Search for a word in the file and return the lines containing that word. 
+	 * 
+	 * @param userInput			String to search in text file.
+	 * @return foundList		ArrayList containing the lines containing search word.
+	 */
+	protected static ArrayList <String> searchText (String userInput) {
 		ArrayList<String> foundList = new ArrayList<String>();
 		String searchText = removeFirstWord(userInput);
 		for (String currentString : commandList){
@@ -184,21 +202,25 @@ public class TextBuddy {
 			}
 		}
 		if (foundList.isEmpty()){
-			print(MESSAGE_SEARCH_FAILED);
+			showToUser(MESSAGE_SEARCH_FAILED);
 		} else for (int i = 0; i < foundList.size(); i++){
 			String foundLine = foundList.get(i);
-			print(foundLine);
+			showToUser(foundLine);
 		}
+		return foundList;
 	}
 	
-	/** Sort lines alphabetically and change the order lines are arranged. */
-	protected static void sortLines () {
+	/** Sort lines alphabetically and change the order lines are arranged. 
+	 * 
+	 * @return MESSAGE_SORT		Sorted message to be shown to user. 
+	 */
+	protected static String sortLines () {
 		Collections.sort(commandList, String.CASE_INSENSITIVE_ORDER);
-		print(MESSAGE_SORT);
+		return MESSAGE_SORT;
 	}
 	
 	/** Save content modified by user command into text file. */
-	protected static void saveFile() {
+	protected static String saveFile() {
 		try {
 			FileOutputStream input = new FileOutputStream(fileName);
 			OutputStreamWriter outputStreamWriter = new OutputStreamWriter(input);
@@ -214,15 +236,15 @@ public class TextBuddy {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 	
 	/**
 	* Converts String to its CommandType equivalent.
 	*
 	* @param commandTypeString	String to be converted to CommandType.
-	* @return 					CommandType equivalent
+	* @return 					CommandType equivalent.
 	*/
-
 	protected static CommandType getCommandTypeFromString(String commandTypeString) {
 		String lowerCaseCommandTypeString = commandTypeString.toLowerCase();
 		switch (lowerCaseCommandTypeString) {
@@ -245,8 +267,11 @@ public class TextBuddy {
 		}
 	}
 
+	protected static void showToUser(String feedback){
+		System.out.println(feedback);
+	}
 	
-	protected static boolean isInputNull(String userCommand) {
+	protected static boolean isInputCommandNull(String userCommand) {
 		if (userCommand.trim().isEmpty()){
 			return true;
 		} else {
@@ -263,8 +288,8 @@ public class TextBuddy {
 		fileName = (args[0]);
 	}
 	
-	protected static void print(String message){
-		System.out.println(message);
+	protected static String getGivenFileName() {
+		return fileName;
 	}
 	
 	private static void printCommandPromptMessage() {
