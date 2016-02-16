@@ -55,7 +55,8 @@ public class TextBuddy {
 	
 	private static Scanner scanner = new Scanner(System.in);
 	private static ArrayList<String> commandList = new ArrayList<String>();
-	private static String fileName;
+	private static String defaultFileName = "notepad.txt";
+	private static String fileName = defaultFileName;
 	
 	/** Enumeration of command types */
 	enum CommandType {
@@ -110,19 +111,19 @@ public class TextBuddy {
 	protected static Object executeCommandType(String userInput, CommandType commandType) {
 		switch (commandType) {
 			case ADD_TEXT:
-				return addText(userInput);
+				return addText(userInput, commandList);
 			case DISPLAY_CONTENT:
-				return displayContent();
+				return displayContent(commandList);
 			case DELETE_TEXT:
-				return deleteText(userInput);
+				return deleteText(userInput, commandList);
 			case CLEAR_CONTENT:
-				return clearContent();
+				return clearContent(commandList);
 			case SEARCH:
-				return searchText(userInput);
+				return searchText(userInput, commandList);
 			case SORT:
-				return sortLines();
+				return sortLines(commandList);
 			case EXIT:
-				saveFile();
+				saveFile(commandList);
 				System.exit(0);
 				return null;
 			case INVALID:
@@ -136,7 +137,7 @@ public class TextBuddy {
 	*
 	* @param userInput			String to add to text file.
 	*/
-	protected static String addText(String userInput) {
+	protected static String addText(String userInput, ArrayList<String> commandList) {
 		String textToAdd = removeFirstWord(userInput);
 		commandList.add(textToAdd);
 		return formatAddedMessage(textToAdd);
@@ -147,7 +148,7 @@ public class TextBuddy {
 	 * @return emptyMessage		Empty file message to be shown to user.
 	 * @return textDisplay		Text lines to be shown to user. 
 	 */
-	protected static String displayContent() {
+	protected static String displayContent(ArrayList<String> commandList) {
 		if (commandList.isEmpty()) {
 			String emptyMessage = formatFileEmptyMessage();
 			return emptyMessage;
@@ -168,7 +169,7 @@ public class TextBuddy {
 	* @param userInput			String line number to deleted in text file.
 	* @return deleteMessage		Delete message to be shown to user.
 	*/
-	protected static String deleteText(String userInput) {
+	protected static String deleteText(String userInput, ArrayList<String> commandList) {
 		int lineNumberToDelete = Integer.parseInt(removeFirstWord(userInput));
 		int arrayIndexToDelete = (lineNumberToDelete - ARRAY_OFFSET);
 		String removedCommand = commandList.remove(arrayIndexToDelete);
@@ -180,7 +181,7 @@ public class TextBuddy {
 	 * 
 	 * @return clearMessage		Cleared message to be shown to user.
 	 */
-	protected static String clearContent() {
+	protected static String clearContent(ArrayList<String> commandList) {
 		commandList.clear();
 		String clearMessage = formatClearedTextMessage();
 		return clearMessage;
@@ -191,7 +192,7 @@ public class TextBuddy {
 	 * @param userInput			String to search in text file.
 	 * @return foundList		ArrayList containing the lines containing search word.
 	 */
-	protected static ArrayList <String> searchText (String userInput) {
+	protected static ArrayList <String> searchText (String userInput, ArrayList<String> commandList) {
 		ArrayList<String> foundList = new ArrayList<String>();
 		String searchText = removeFirstWord(userInput);
 		for (String currentString : commandList){
@@ -214,13 +215,14 @@ public class TextBuddy {
 	 * 
 	 * @return MESSAGE_SORT		Sorted message to be shown to user. 
 	 */
-	protected static String sortLines () {
+	protected static ArrayList<String> sortLines (ArrayList<String> commandList) {
 		Collections.sort(commandList, String.CASE_INSENSITIVE_ORDER);
-		return MESSAGE_SORT;
+		showToUser(MESSAGE_SORT);
+		return commandList;
 	}
 	
 	/** Save content modified by user command into text file. */
-	protected static String saveFile() {
+	protected static String saveFile(ArrayList<String> commandList) {
 		try {
 			FileOutputStream input = new FileOutputStream(fileName);
 			OutputStreamWriter outputStreamWriter = new OutputStreamWriter(input);
@@ -290,6 +292,10 @@ public class TextBuddy {
 	
 	protected static String getGivenFileName() {
 		return fileName;
+	}
+	
+	protected static ArrayList<String> getCommandList() {
+		return commandList;
 	}
 	
 	private static void printCommandPromptMessage() {
